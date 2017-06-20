@@ -1,6 +1,7 @@
 import aiohttp
-
+import datetime
 from .fetcher import Fetcher
+import bugsnag
 
 
 class MaidCoinAPI(Fetcher):
@@ -14,5 +15,9 @@ class MaidCoinAPI(Fetcher):
             endpoint = self._URL.format(address)
             response = await self._fetch(session, endpoint)
 
-            balance = float(response)
-            callback('MAID', balance)
+            try:
+                balance = float(response)
+                callback('MAID', balance)
+            except:
+                bugsnag.notify(BaseException('MAID request failed'))
+                print(datetime.datetime.now(), 'MAID request failed', response)

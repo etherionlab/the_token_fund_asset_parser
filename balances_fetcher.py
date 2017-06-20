@@ -49,6 +49,7 @@ def replace(symbol):
 
 def on_amount_received(symbol, amount):
     global balances
+    print(symbol, amount)
     balances[replace(symbol)] = balances.get(replace(symbol), 0) + amount
 
 

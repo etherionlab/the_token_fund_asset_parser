@@ -1,5 +1,7 @@
 import aiohttp
 import json
+import datetime
+import bugsnag
 
 from .fetcher import Fetcher
 
@@ -14,9 +16,14 @@ class RippleAPI(Fetcher):
         async with aiohttp.ClientSession(loop=loop) as session:
             endpoint = self._URL.format(address)
             response = await self._fetch(session, endpoint)
-            response = json.loads(response)
 
-            balance = 0
-            for xrp_balance in response.get('balances'):
-                balance += float(xrp_balance.get('value'))
-            callback('XRP', balance)
+            try:
+                response = json.loads(response)
+                balance = 0
+                for xrp_balance in response.get('balances'):
+                    balance += float(xrp_balance.get('value'))
+                callback('XRP', balance)
+            except:
+                bugsnag.notify(BaseException('Ripple request failed'))
+                print(datetime.datetime.now(), 'Ripple request failed', response)
+

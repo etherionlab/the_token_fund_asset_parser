@@ -1,6 +1,7 @@
 import aiohttp
-import asyncio
 import json
+import datetime
+import bugsnag
 
 from .fetcher import Fetcher
 
@@ -31,10 +32,16 @@ class CoinmarketcapAPI(Fetcher):
 
     async def request_assets(self, loop, callback):
         async with aiohttp.ClientSession(loop=loop) as session:
-            ticker = await self._fetch(session, self._COINMARKETCAP_URL.format(self._ASSETS_LIMIT))
-            ticker = json.loads(ticker)
-            callback([Asset(asset.get("name"),
-                            asset.get("symbol"),
-                            asset.get("price_usd"),
-                            asset.get("price_btc"),
-                            int(asset.get("last_updated"))) for asset in ticker])
+            response = await self._fetch(session, self._COINMARKETCAP_URL.format(self._ASSETS_LIMIT))
+
+            try:
+                ticker = json.loads(response)
+                callback([Asset(asset.get("name"),
+                                asset.get("symbol"),
+                                asset.get("price_usd"),
+                                asset.get("price_btc"),
+                                int(asset.get("last_updated"))) for asset in ticker])
+            except:
+                bugsnag.notify(BaseException('CoinMarketCap request failed'))
+                print(datetime.datetime.now(), 'CoinMarketCap request failed', response)
+

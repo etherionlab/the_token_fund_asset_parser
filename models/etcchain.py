@@ -1,5 +1,7 @@
 import aiohttp
 import json
+import datetime
+import bugsnag
 
 from .fetcher import Fetcher
 
@@ -14,12 +16,11 @@ class EtcChainAPI(Fetcher):
         async with aiohttp.ClientSession(loop=loop) as session:
             endpoint = self._URL.format(address)
             response = await self._fetch(session, endpoint)
-            response = json.loads(response)
 
-            balance = -1
             try:
+                response = json.loads(response)
                 balance = float(response.get('balance'))
-            except TypeError as _:
-                print("You provided wrong address!")
-
-            callback('ETC', balance)
+                callback('ETC', balance)
+            except:
+                bugsnag.notify(BaseException('ETC request failed'))
+                print(datetime.datetime.now(), 'ETC request failed', response)

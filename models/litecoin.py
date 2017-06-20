@@ -1,5 +1,7 @@
 import aiohttp
 import json
+import datetime
+import bugsnag
 
 from .fetcher import Fetcher
 
@@ -14,11 +16,17 @@ class LitecoinAPI(Fetcher):
         async with aiohttp.ClientSession(loop=loop) as session:
             endpoint = self._URL.format(address)
             response = await self._fetch(session, endpoint)
-            response = json.loads(response)
-            if response.get('status') != 'success':
-                print('LTC request failed:', response)
-                return
-            balance = float(response.get('data').get('balance'))
-            multisig_balance = float(response.get('data').get('balance_multisig'))
-            amount = balance + multisig_balance
-            callback('LTC', amount)
+
+            try:
+                response = json.loads(response)
+                if response.get('status') != 'success':
+                    bugsnag.notify(BaseException('LTC request failed'))
+                    print(datetime.datetime.now(), 'LTC request failed', response)
+                    return
+                balance = float(response.get('data').get('balance'))
+                multisig_balance = float(response.get('data').get('balance_multisig'))
+                amount = balance + multisig_balance
+                callback('LTC', amount)
+            except:
+                bugsnag.notify(BaseException('LTC request failed'))
+                print(datetime.datetime.now(), 'LTC request failed', response)

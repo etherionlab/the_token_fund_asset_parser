@@ -1,5 +1,7 @@
 import aiohttp
 import json
+import datetime
+import bugsnag
 
 from .fetcher import Fetcher
 
@@ -14,12 +16,11 @@ class ZCashAPI(Fetcher):
         async with aiohttp.ClientSession(loop=loop) as session:
             endpoint = self._URL.format(address)
             response = await self._fetch(session, endpoint)
-            response = json.loads(response)
-
-            balance = -1
 
             try:
+                response = json.loads(response)
                 balance = float(response.get("balance"))
-            except AttributeError as _:
-                print("You provided wrong address!")
-            callback('ZEC', balance)
+                callback('ZEC', balance)
+            except:
+                bugsnag.notify(BaseException('ZCash request failed'))
+                print(datetime.datetime.now(), 'ZCash request failed', response)
