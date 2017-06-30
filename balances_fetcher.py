@@ -49,7 +49,6 @@ def replace(symbol):
 
 def on_amount_received(symbol, amount):
     global balances
-    print(symbol, amount)
     balances[replace(symbol)] = balances.get(replace(symbol), 0) + amount
 
 
@@ -180,6 +179,15 @@ def fetch_balances():
                 address=address,
                 token='BAT',
                 contract_address='0x0D8775F648430679A709E98d2b0Cb6250d2887EF',
+                decimals=18,
+                callback=on_amount_received
+            )
+        elif symbol == 'SNT':
+            future = ethAPI.get_tokens_balance_by_address(
+                loop,
+                address=address,
+                token='SNT',
+                contract_address='0x744d70FDBE2Ba4CF95131626614a1763DF805B9E',
                 decimals=18,
                 callback=on_amount_received
             )
